@@ -1,0 +1,75 @@
+rules_version = '2';
+
+// ─────────────────────────────────────────────────────────────
+//  RÈGLES DE SÉCURITÉ DE L'AGENDA PARTAGÉ
+//  À coller dans la console Firebase : Firestore → onglet « Règles » → Publier.
+//
+//  ⚠️ Remplace l'adresse ci-dessous par TON courriel Google, en minuscules,
+//     exactement le même que dans config.js.
+// ─────────────────────────────────────────────────────────────
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function ownerEmail() { return 'lesprojetslamarre@hotmail.com'; }
+
+    function signedIn() { return request.auth != null && request.auth.token.email_verified == true; }
+    function myEmail() { return request.auth.token.email.lower(); }
+    function isOwner() { return signedIn() && myEmail() == ownerEmail(); }
+    // Membre = le gestionnaire, ou une adresse ajoutée dans « Membres »
+    function isMember() { return isOwner() || (signedIn() && exists(/databases/$(database)/documents/members/$(myEmail()))); }
+
+    function isDate(v) { return v is string && v.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); }
+    function isTimeOrEmpty(v) { return v is string && (v == '' || v.matches('^[0-2][0-9]:[0-5][0-9]$')); }
+    function validEvent(d) {
+      return d.keys().hasOnly(['owner', 't', 'd', 'e', 'all', 's', 'f', 'r', 'u', 'loc', 'n', 'x', 'last', 'updatedAt'])
+        && d.owner == request.auth.uid
+        && d.t is string && d.t.size() > 0 && d.t.size() <= 200
+        && isDate(d.d) && isDate(d.e) && d.e >= d.d
+        && d.all is bool && isTimeOrEmpty(d.s) && isTimeOrEmpty(d.f)
+        && d.r in ['', 'd', 'w', 'm', 'y']
+        && (d.u == '' || isDate(d.u))
+        && d.loc is string && d.loc.size() <= 200
+        && d.n is string && d.n.size() <= 2000
+        && d.x is list && d.x.size() <= 300
+        && isDate(d.last)
+        && d.updatedAt is timestamp;
+    }
+
+    // Nom de l'agenda : tout le monde le lit, seul le gestionnaire le change
+    match /config/{id} {
+      allow read: if isMember();
+      allow write: if isOwner() && id == 'main'
+        && request.resource.data.keys().hasOnly(['name'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 80;
+    }
+
+    // Liste des membres : seul le gestionnaire la gère ; chacun peut vérifier sa propre adresse
+    match /members/{mail} {
+      allow read: if isOwner() || (signedIn() && mail == myEmail());
+      allow create, update: if isOwner() && mail == mail.lower()
+        && request.resource.data.keys().hasOnly(['email', 'addedAt'])
+        && request.resource.data.email == mail;
+      allow delete: if isOwner();
+    }
+
+    // Profil (nom, couleur) : chacun écrit seulement le sien
+    match /people/{uid} {
+      allow read: if isMember();
+      allow create, update: if isMember() && uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['name', 'email', 'photo', 'color', 'updatedAt'])
+        && request.resource.data.email == myEmail()
+        && request.resource.data.name is string && request.resource.data.name.size() <= 100
+        && request.resource.data.photo is string && request.resource.data.photo.size() <= 1000
+        && request.resource.data.color is int && request.resource.data.color >= 0 && request.resource.data.color <= 10;
+    }
+
+    // Événements : tous les membres les voient ;
+    // seul l'auteur peut les modifier ou les supprimer — même le gestionnaire ne peut pas toucher ceux des autres
+    match /events/{id} {
+      allow read: if isMember();
+      allow create: if isMember() && validEvent(request.resource.data);
+      allow update: if isMember() && resource.data.owner == request.auth.uid && validEvent(request.resource.data);
+      allow delete: if isMember() && resource.data.owner == request.auth.uid;
+    }
+  }
+}

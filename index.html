@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Agenda partagé</title>
+<meta name="description" content="Un agenda unique partagé entre les personnes invitées. Chacun gère ses propres événements.">
+<meta name="theme-color" content="#f8fafd" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#131314" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Agenda">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app" id="app">
+<header class="tb">
+ <button class="ib" id="menu" aria-label="Menu principal" data-i="menu"></button>
+ <div class="logo"><svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><rect x="3.5" y="4.5" width="29" height="28" rx="6" style="fill:var(--surf);stroke:var(--line)" stroke-width="1.5"/><path d="M3.5 10.5a6 6 0 0 1 6-6h17a6 6 0 0 1 6 6v2.5h-29z" style="fill:var(--blue)"/><text id="logod" x="18" y="28" text-anchor="middle" font-family="Roboto,Arial,sans-serif" font-weight="500" font-size="13" style="fill:var(--ink)">1</text></svg><span id="title">Agenda partagé</span><button class="ib sm" id="ren" aria-label="Renommer l’agenda" title="Renommer l’agenda" data-i="pencil" data-s="16" hidden></button></div>
+ <button class="pill" id="tod" title="Aujourd’hui (T)" aria-label="Aujourd’hui"><span class="tfull">Aujourd’hui</span><span class="tico" id="tico">1</span></button>
+ <div class="arrows"><button class="ib" id="prev" aria-label="Période précédente" title="Précédent (K)" data-i="left"></button><button class="ib" id="next" aria-label="Période suivante" title="Suivant (J)" data-i="right"></button></div>
+ <div class="period" id="period" aria-live="polite"></div>
+ <label class="srch" title="Rechercher (/)"><span data-i="search"></span><input id="q" type="search" placeholder="Rechercher" aria-label="Rechercher un événement"></label>
+ <button class="ib" id="help" aria-label="Partager l’agenda et aide" title="Partager et aide" data-i="help"></button>
+ <div class="vsel"><button class="pill" id="vbtn" aria-haspopup="menu" aria-expanded="false"><span id="vlab">Semaine</span><span data-i="down" data-s="18"></span></button><div class="menu" id="vmenu" role="menu" hidden></div></div>
+ <button class="avb" id="avb" aria-label="Mon compte" aria-haspopup="dialog"><span class="av" id="av">?</span></button>
+</header>
+<div class="bd">
+ <aside class="side" id="side" aria-label="Panneau latéral">
+  <button class="fab" id="new" hidden><span data-i="plus" data-s="26"></span>Créer</button>
+  <div class="vside" id="vside"></div>
+  <div class="instbar" id="instbar" hidden><span>Installe l’agenda comme une app.</span><button id="inst">Installer</button></div>
+  <div class="mini" id="mini"></div>
+  <section class="cals"><h2>Agendas partagés</h2><div id="people"></div></section>
+  <p class="snote">Chacun peut modifier ou supprimer seulement ses propres événements.</p>
+  <button class="sbtn" data-act="members" id="smem" hidden><span data-i="share"></span>Membres et invitations</button>
+  <button class="sbtn" data-act="help"><span data-i="help"></span>Aide</button>
+ </aside>
+ <div class="scrim" id="scrim" hidden></div>
+ <main class="main"><p class="status" id="status" hidden></p><div class="cal" id="cal"></div></main>
+</div>
+<button class="mfab" id="mnew" aria-label="Créer un événement" data-i="plus" data-s="28" hidden></button>
+</div>
+<div class="acct" id="acct" role="dialog" aria-label="Mon compte" hidden></div>
+<div class="ov" id="ov" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Détails"></div></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<div class="gate" id="gate"><div class="gcard" id="gcard"><img src="icons/icon-192.png" alt=""><h1>Agenda partagé</h1><div class="spin" aria-label="Chargement"></div></div></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
